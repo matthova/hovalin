@@ -14,6 +14,13 @@ nudge = 0.0001;
 
 rotate([0,atan2(neck_base_width-neck_top_width,neck_length)/2,0])
 hull(){
+	neck_top_slice();
+
+	translate([0,0,neck_length - slice])
+	neck_base_slice();
+}
+
+module neck_top_slice(){
 	intersection(){
 		translate([-top_fret_arch_rad,fretboard_thick,0])
 		cube([top_fret_arch_rad*2,top_fret_arch_rad*2,slice]);
@@ -29,9 +36,9 @@ hull(){
 		translate([-neck_top_width/2,-neck_top_width,0])
 		cube(neck_top_width);		
 	} 
+}
 
-	translate([0,0,neck_length - slice])
-	union(){
+module neck_base_slice(){
 		intersection(){
 			translate([-base_fret_arch_rad,fretboard_thick,0])
 			cube([base_fret_arch_rad*2,base_fret_arch_rad*2,slice]);
@@ -47,7 +54,6 @@ hull(){
 			translate([-neck_base_width/2,-neck_base_width,0])
 			cube(neck_base_width);		
 		}
-	} 
 }
 		//translate([-neck_top_width/2, neck_top_width/2 -neck_top_arch_rad, 0])
 		//cube(neck_top_width);		
