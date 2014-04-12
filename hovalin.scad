@@ -1,9 +1,9 @@
 slice = .1;
 nudge = 0.0001;
-precision = 300;
+precision = 100;
 pi = 3.14159;
 
-n_strings = 4;
+n_strings = 5;
 neck_length = 290;
 neck_width = 28.6;
 neck_top_arch_rad = 3;
@@ -25,22 +25,26 @@ saddle_depth = saddle_neck_rad - sqrt(pow(saddle_neck_rad,2)-pow(saddle_rad,2));
 saddle_round_rad = 20;
 neck_grid = neck_width/(n_strings*2);
 
-//rotate([0,atan2((bridge_width-neck_width)/2,neck_length),0])
-
-difference(){
-  union(){
-    nut();
+rotate([0,atan2((bridge_width-neck_width)/2,neck_length),0])
+intersection(){
+  difference(){
+    union(){
+      nut();
   
-    color("red")
-    translate([0,-neck_bot_arch_rad,0])
-    rotate([atan2((bridge_bot_arch_rad - neck_bot_arch_rad),neck_length),0,0])
-    translate([0,saddle_depth,neck_to_saddle])
-    saddle();
+      color("red")
+      translate([0,-neck_bot_arch_rad,0])
+      rotate([atan2((bridge_bot_arch_rad - neck_bot_arch_rad),neck_length),0,0])
+      translate([0,saddle_depth,neck_to_saddle])
+      saddle();
   
-    violin_neck();
-  }
+      violin_neck();
+    }
  
-  string_holes();
+    string_holes_nut();
+    string_holes();
+  }
+  translate([-100,-100,-100])
+  cube([200,200,250]);
 }
 
 module nut(){
@@ -59,12 +63,10 @@ module string_holes(){
   string_holes_base();
 }
 
-color("blue")
-string_holes_nut();
+//string_holes_nut();
 module string_holes_nut(){
   for(i =[1:n_strings]){
-    echo(-abs((i + 2 - n_strings)*2 - (1 * ((n_strings-1) % 2))));
-    translate([neck_grid * (i - 1) * 2 - neck_width/2 + neck_grid,-abs(i + 2 - n_strings),-10])
+    translate([neck_grid * (i - 1) * 2 - neck_width/2 + neck_grid,-neck_top_rad + fretboard_thick + neck_top_arch_rad +sqrt(pow(neck_top_rad + 4,2) - pow(abs((i + 2 - n_strings)*2 - (1 * ((n_strings-1) % 2)))*neck_grid,2)),0])
     cylinder(r = 1, h = (neck_top_arch_rad +neck_bot_arch_rad + fretboard_thick)*2, $fn=precision);
   }
 }
