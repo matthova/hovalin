@@ -1,3 +1,5 @@
+
+
 slice = .1;
 nudge = 0.0001;
 precision = 100;
@@ -17,13 +19,13 @@ bridge_bot_arch_rad = 25;
 bridge_bot_rad = (pow(bridge_width,2) + 4*pow(bridge_bot_arch_rad,2))/(8*bridge_bot_arch_rad);
 bot_angle = atan2((bridge_bot_arch_rad - neck_bot_arch_rad), neck_length);
 echo(bot_angle);
-neck_to_saddle = 115;
-saddle_rad = 26/2;
-saddle_to_neck = 24;
+nut_to_thumb_bridge = 115;
+thumb_bridge_rad = 26/2;
+thumb_bridge_height = 24;
 fretboard_thick = 4;
-saddle_neck_rad = (bridge_bot_rad-neck_bot_rad)*neck_to_saddle/neck_length + neck_bot_rad;
-saddle_depth = saddle_neck_rad - sqrt(pow(saddle_neck_rad,2)-pow(saddle_rad,2));
-saddle_round_rad = 20;
+thumb_bridge_neck_rad = (bridge_bot_rad-neck_bot_rad)*nut_to_thumb_bridge/neck_length + neck_bot_rad;
+thumb_bridge_depth = thumb_bridge_neck_rad - sqrt(pow(thumb_bridge_neck_rad,2)-pow(thumb_bridge_rad,2));
+thumb_bridge_round_rad = 20;
 neck_grid = neck_width/(n_strings*2);
 
 violin();
@@ -38,8 +40,8 @@ module violin(){
         color("red")
         translate([0,-neck_bot_arch_rad,0])
         rotate([atan2((bridge_bot_arch_rad - neck_bot_arch_rad),neck_length),0,0])
-        translate([0,saddle_depth,neck_to_saddle])
-        saddle();
+        translate([0,thumb_bridge_depth,nut_to_thumb_bridge])
+        thumb_bridge();
   
         violin_neck();
       }
@@ -55,14 +57,20 @@ module violin(){
 }
 
 module nut(){
+  neck_chord = 2 * sqrt(pow(neck_top_rad, 2) - pow(neck_top_rad - neck_top_arch_rad, 2));
+  bridge_chord = 2 * sqrt(pow(bridge_top_rad, 2) - pow(bridge_top_rad - bridge_top_arch_rad, 2));
+  neck_delta = abs(bridge_chord - neck_chord)/neck_length;
   hull(){
     translate([0,4,14])
+    scale([(neck_delta*14 + neck_chord)/neck_chord,1,1])
     linear_extrude(height=slice)
     neck_slice();
     translate([0,4,16])
+    scale([(neck_delta*16 + neck_chord)/neck_chord,1,1])
     linear_extrude(height=slice)
     neck_slice();
     translate([0,0,10])
+    scale([(neck_delta*10 + neck_chord)/neck_chord,1,1])
     linear_extrude(height=slice)
     neck_slice();
   }
@@ -97,26 +105,26 @@ module string_holes_base(){
   }
 }
 
-module saddle(){
-  translate([0,saddle_neck_rad-saddle_depth,0])
+module thumb_bridge(){
+  translate([0,thumb_bridge_neck_rad-thumb_bridge_depth,0])
   rotate([90,0,0])
-  cylinder(r = saddle_rad, h = saddle_neck_rad + saddle_to_neck, $fn = precision);
-  // cylinder(r1 = saddle_neck_rad, r2 = saddle_rad, h = saddle_neck_rad + saddle_to_neck, $fn = precision);
-  saddle_smooth();
+  cylinder(r = thumb_bridge_rad, h = thumb_bridge_neck_rad + thumb_bridge_height, $fn = precision);
+  // cylinder(r1 = thumb_bridge_neck_rad, r2 = thumb_bridge_rad, h = thumb_bridge_neck_rad + thumb_bridge_height, $fn = precision);
+  thumb_bridge_smooth();
   mirror([1,0,0])
-  saddle_smooth();
+  thumb_bridge_smooth();
 }
 
-module saddle_smooth(){
-  for(i = [0:.1:saddle_rad]){  
-    translate([i,-saddle_depth-saddle_round_rad+saddle_neck_rad-sqrt(pow(saddle_neck_rad,2)-pow(i,2)),-sqrt(pow(saddle_rad ,2)-pow(i,2))+saddle_rad])
+module thumb_bridge_smooth(){
+  for(i = [0:.1:thumb_bridge_rad]){  
+    translate([i,-thumb_bridge_depth-thumb_bridge_round_rad+thumb_bridge_neck_rad-sqrt(pow(thumb_bridge_neck_rad,2)-pow(i,2)),-sqrt(pow(thumb_bridge_rad ,2)-pow(i,2))+thumb_bridge_rad])
     rotate([0,90,0])
     linear_extrude(height = .1){
-      translate([saddle_rad,0])
+      translate([thumb_bridge_rad,0])
       difference(){
-        square([saddle_round_rad,saddle_round_rad]);
-        translate([saddle_round_rad,0])
-        circle(r=saddle_round_rad, $fn=precision);
+        square([thumb_bridge_round_rad,thumb_bridge_round_rad]);
+        translate([thumb_bridge_round_rad,0])
+        circle(r=thumb_bridge_round_rad, $fn=precision);
       }
     }
   }
