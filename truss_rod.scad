@@ -5,8 +5,8 @@ cube_x = 10;
 cube_y = 150;
 cube_z = 15;
 
-truss_rad = 3.3;// 6.3/2;
-truss_height = 9.3;
+truss_rad = 3.6;// 6.3/2;
+truss_height = 9.7;
 cube_lift = truss_height - truss_rad*2;
 
 cylinder_length = 50;
