@@ -5,8 +5,8 @@ cube_x = 10;
 cube_y = 150;
 cube_z = 15;
 
-truss_rad = 3.9;// 6.3/2;
-truss_height = 9.9;
+truss_rad = 4.0;// 6.3/2;
+truss_height = 10;
 cube_lift = truss_height - truss_rad*2;
 
 cylinder_length = 50;
@@ -18,7 +18,8 @@ truss_length = 376;
 
 //truss_rod();
 module truss_rod(){
-  rotate([-90,-90,0])
+  translate([0,-truss_height + truss_rad,0])
+  rotate([-90,-90,180])
   union(){
     translate([truss_length,0,0])
     rotate([0,90,0])
