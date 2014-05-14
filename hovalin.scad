@@ -2,11 +2,11 @@ include <truss_rod.scad>
 
 slice = .1;
 nudge = 0.0001;
-precision = 100;
+precision = 50;
 pi = 3.14159;
 
 n_strings = 4;
-neck_length = 180;
+neck_length = 280;
 neck_width = 28.6;
 neck_top_arch_rad = 3;
 neck_top_rad = (pow(neck_width,2) + 4*pow(neck_top_arch_rad,2))/(8*neck_top_arch_rad);
@@ -40,6 +40,7 @@ thumb_bridge_height = 24;
 thumb_bridge_neck_rad = (bridge_bot_rad-neck_bot_rad)*thumb_bridge_to_nut/neck_length + neck_bot_rad;
 thumb_bridge_depth = thumb_bridge_neck_rad - sqrt(pow(thumb_bridge_neck_rad,2)-pow(thumb_bridge_rad,2));
 thumb_bridge_round_rad = 20;
+neck_slice_1 = thumb_bridge_to_nut + 50;
 
 
 neck_to_nut_1 = 2;
@@ -53,14 +54,15 @@ neck_angle_increment = 2 * asin(neck_width/(2 * neck_top_rad))/neck_slices;
 nut_height = 2;
 nut_string_rad = .7;
 
-bolt_rad = 2;
-bolt_length = 20;
-bolt_head_rad = 4;
-bolt_head_length = 3;
+bolt_rad = 2.5;
+bolt_length = 24;
+bolt_head_rad = 4.5;
+bolt_head_length = 4;
+nut_width = 7.7;
+nut_thick = 2.7;
 
 violin();
 //body_piece();
-
 
 module bolt(){
   mirror([0,0,1])
@@ -69,45 +71,40 @@ module bolt(){
     cylinder(r = bolt_head_rad, h = bolt_head_length, $fn = precision);
   }
   mirror([0,1,0])
-  translate([-bolt_rad * 3,-bolt_rad * 3,-bolt_length])
-  cube([bolt_rad*6,thumb_bridge_height,bolt_head_length]);
+  translate([-nut_width/2,-bolt_rad * 3,-bolt_length])
+  cube([nut_width,thumb_bridge_height,nut_thick]);
 }
 
 
 module violin(){
-//  rotate([0,atan2((bridge_width-neck_width)/2,neck_length),0])
+  rotate([0,atan2((bridge_width-neck_width)/2,neck_length),0])
   difference(){
     union(){
-      // nut();
+      nut();
       
-      color("blue")
-      body_piece();
-      
-       // color("green")
-       // translate([0,-neck_bot_arch_rad-(neck_bot_delta*(thumb_bridge_to_nut-thumb_bridge_rad*2)),0])
-       // // rotate([180-acos(thumb_neck_to_nut/(bridge_bot_arch_rad - neck_bot_arch_rad)),0,0])
-       // translate([0,thumb_neck_depth,thumb_bridge_to_nut])
-       // thumb_bridge();
+       color("green")
+       translate([0,-neck_bot_arch_rad-(neck_bot_delta*(thumb_bridge_to_nut-thumb_bridge_rad*2)),0])
+       translate([0,thumb_neck_depth,thumb_bridge_to_nut])
+       thumb_bridge();
   
-       // color("red")
-       // translate([0,-neck_bot_arch_rad,0])
-       // // rotate([180-acos(thumb_neck_to_nut/(bridge_bot_arch_rad - neck_bot_arch_rad)),0,0])
-       // translate([0,thumb_neck_depth,thumb_neck_to_nut])
-       // thumb_neck();
-       //   
-       // violin_neck();
+       color("red")
+       translate([0,-neck_bot_arch_rad,0])
+       translate([0,thumb_neck_depth,thumb_neck_to_nut])
+       thumb_neck();
+         
+       violin_neck();
               
     }
     
-    translate([0,-(neck_bot_arch_rad + ((thumb_bridge_to_nut - thumb_bridge_rad*2) * neck_bot_delta) + thumb_bridge_height/2),thumb_bridge_to_nut + thumb_bridge_rad])
+    translate([0,-(neck_bot_arch_rad + ((thumb_bridge_to_nut - thumb_bridge_rad*2) * neck_bot_delta) + thumb_bridge_height/2),thumb_bridge_to_nut + bolt_length - thumb_bridge_rad/2])
     bolt();
     
-    rotate([0,0,30])
-    translate([10,-10,thumb_bridge_to_nut + thumb_bridge_rad])
+    translate([10,-6,thumb_bridge_to_nut + thumb_bridge_rad])
+    rotate([0,0,90])
     bolt();
     
-    rotate([0,0,-30])
-    translate([-10,-10,thumb_bridge_to_nut + thumb_bridge_rad])
+    translate([-10,-6,thumb_bridge_to_nut + thumb_bridge_rad])
+    rotate([0,0,-90])
     bolt();
 
     translate([0,0,-19])
@@ -117,7 +114,7 @@ module violin(){
     string_holes();
     // translate([0,-(neck_bot_arch_rad - truss_height),0])
       
-    rotate([180-acos(thumb_neck_to_nut/(bridge_bot_arch_rad - neck_bot_arch_rad)),0,0])
+    // rotate([180-acos(thumb_neck_to_nut/(bridge_bot_arch_rad - neck_bot_arch_rad)),0,0])
     truss_rod();
 
     rotate([0,-atan2((bridge_width-neck_width)/2,neck_length),0])
@@ -274,10 +271,11 @@ module violin_neck(){
         neck_slice_middle();
       }
 
-      translate([0,0,neck_length - slice])
+      translate([0,0,neck_slice_1 - slice])
+      scale((neck_width+neck_slice_1*neck_delta)/neck_width)
       linear_extrude(height = slice){        
-        bridge_slice_top();
-        bridge_slice_middle();
+        neck_slice_top();
+        neck_slice_middle();
       }
     }
     
