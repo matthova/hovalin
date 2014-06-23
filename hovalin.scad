@@ -1,13 +1,13 @@
-include <truss_rod.scad>
-
 /* Constants */
 slice = .1; // thickness of 2d shapes. set to small value
 nudge = 0.0001; // used to push the objects just barely to resolve any manifold issues
 precision = 100; // increase to smooth cylinders or crash computer
 pi = 3.14159; // tasty pi
 
+
 n_strings = 5; // number of strings for the violin
 neck_length = 280; // Neck Length
+
 neck_width = 28.6; // Distance across fretboard nearest to the nut
 neck_top_arch_rad = 3; // height of center of nut-side fretboard compared to edges
 neck_top_rad = (pow(neck_width,2) + 4*pow(neck_top_arch_rad,2))/(8*neck_top_arch_rad); //radius of circle formed by nut-side rounded fretboard
@@ -26,19 +26,19 @@ neck_delta = abs(bridge_width - neck_width)/neck_length; // distance that neck w
 neck_bot_delta = abs(neck_bot_arch_rad - bridge_bot_arch_rad)/neck_length; // distance that neck bottom arch rad increases per mm along neck length
 neck_top_delta = abs(neck_top_arch_rad - bridge_top_arch_rad)/neck_length; // distance that neck top arch rad increases per mm along neck length
 
+thumb_neck_height = 24; // height of first position thumb ridge
+thumb_neck_round_rad = 20;
 thumb_neck_rad = neck_width/2 - neck_delta*neck_width/2; // radius of cylinder near the nut. used for referencing first position
 thumb_neck_to_nut = -thumb_neck_rad; // ???
-thumb_neck_height = 24; // height of first position thumb ridge
 thumb_neck_neck_rad = (bridge_bot_rad-neck_bot_rad)*thumb_neck_to_nut/neck_length + neck_bot_rad;
 thumb_neck_depth = thumb_neck_neck_rad - sqrt(pow(thumb_neck_neck_rad,2)-pow(thumb_neck_rad,2));
-thumb_neck_round_rad = 20;
 
 thumb_bridge_to_nut = 115;
 thumb_bridge_rad = 26/2;
 thumb_bridge_height = 24;
+thumb_bridge_round_rad = 20;
 thumb_bridge_neck_rad = (bridge_bot_rad-neck_bot_rad)*thumb_bridge_to_nut/neck_length + neck_bot_rad;
 thumb_bridge_depth = thumb_bridge_neck_rad - sqrt(pow(thumb_bridge_neck_rad,2)-pow(thumb_bridge_rad,2));
-thumb_bridge_round_rad = 20;
 neck_slice_1 = thumb_bridge_to_nut + 50;
 
 
@@ -48,7 +48,7 @@ neck_to_nut_3 = thumb_neck_rad;
 neck_hole_slice_width = (neck_width - neck_delta*(neck_to_nut_3/2))*.8;
 neck_grid = neck_hole_slice_width/(n_strings*2);
 neck_slices = n_strings * 2;
-neck_angle_increment = 2 * asin(neck_width/(2 * neck_top_rad))/neck_slices;
+neck_angle_increment = 1.8 * asin(neck_width/(2 * neck_top_rad))/neck_slices;
 
 nut_height = 2;
 nut_string_rad = .7;
@@ -61,9 +61,9 @@ nut_width = 7.9;
 nut_thick = 2.9;
 
 neck_to_bridge = 50;
-bridge_angle_increment = 2 * asin((bridge_width + neck_to_bridge*neck_delta)/(2 * bridge_top_rad))/neck_slices;
+bridge_angle_increment = neck_angle_increment * 2;
 bridge_length = 10;
-bridge_lift = 10;
+bridge_lift = 5;
 bridge_to_end = 50;
 
 tuner_rad = 5;
@@ -119,7 +119,7 @@ module neck_to_bridge(){
       bridge_slice_bot();
     }
     
-    scale([((bridge_width + neck_to_bridge * neck_delta) / bridge_width),1,1])
+    scale([((bridge_width + neck_to_bridge * neck_delta) / bridge_width),((bridge_width + neck_to_bridge * neck_delta) / bridge_width),1])
     translate([0,0,neck_to_bridge - slice])
     linear_extrude(height = slice){
       bridge_slice_middle();
@@ -132,20 +132,35 @@ module bridge(){
   color("blue")
   difference(){
     union(){
-      translate([0,0,neck_length + neck_to_bridge])
+      translate([0,bridge_lift,neck_length + neck_to_bridge])
       hull(){
-        scale([((bridge_width + neck_to_bridge * neck_delta) / bridge_width),1,1])
+        scale([((bridge_width + neck_to_bridge * neck_delta) / bridge_width),((bridge_width + neck_to_bridge * neck_delta) / bridge_width),1])
         linear_extrude(height = slice){
-          translate([0,bridge_lift,0])
           bridge_slice_top();
           bridge_slice_middle();
           bridge_slice_bot();
         }
     
-        scale([((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),1,1])
+        scale([((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),1])
         translate([0,0,bridge_length - slice])
         linear_extrude(height = slice){
-          translate([0,bridge_lift,0])
+          bridge_slice_top();
+          bridge_slice_middle();
+          bridge_slice_bot();
+        }
+      }
+      translate([0,0,neck_length + neck_to_bridge])
+      hull(){
+        scale([((bridge_width + neck_to_bridge * neck_delta) / bridge_width),((bridge_width + neck_to_bridge * neck_delta) / bridge_width),1])
+        linear_extrude(height = slice){
+          bridge_slice_top();
+          bridge_slice_middle();
+          bridge_slice_bot();
+        }
+    
+        scale([((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),1])
+        translate([0,0,bridge_length - slice])
+        linear_extrude(height = slice){
           bridge_slice_top();
           bridge_slice_middle();
           bridge_slice_bot();
@@ -157,12 +172,13 @@ module bridge(){
 }
 
 module bridge_string_holes(){
-  translate([0,0,neck_length + neck_to_bridge])
+  
   for(i = [1:n_strings]){
-    translate([0,- bridge_top_rad + bridge_top_arch_rad + neck_to_bridge * neck_top_delta + bridge_lift + fretboard_thick / 2,0])
+    translate([0,bridge_lift + fretboard_thick * 1.25 - (bridge_top_rad - bridge_top_arch_rad) * (bridge_top_arch_rad  + neck_to_bridge * neck_top_delta)/bridge_top_arch_rad,0])
     rotate([0,0,bridge_angle_increment * (i - n_strings/2 - .5) * 2])
-    translate([0,bridge_top_rad * (bridge_width + (neck_to_bridge + bridge_length) * neck_top_delta)/bridge_width,0])
-    cylinder(r = nut_string_rad, h = 20, $fn=precision);
+    // translate([0,bridge_top_arch_rad + neck_to_bridge * neck_top_delta + fretboard_thick,neck_length + neck_to_bridge])
+    translate([0, bridge_top_rad * ((bridge_top_arch_rad + fretboard_thick) + neck_to_bridge * neck_top_delta)/(bridge_top_arch_rad + fretboard_thick),neck_length + neck_to_bridge])
+    cylinder(r = nut_string_rad, h = 100, $fn=precision);
   }  
 }
 
