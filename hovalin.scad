@@ -5,7 +5,7 @@ precision = 100; // increase to smooth cylinders or crash computer
 pi = 3.14159; // tasty pi
 
 
-n_strings = 5; // number of strings for the violin
+n_strings = 4; // number of strings for the violin
 neck_length = 280; // Neck Length
 
 neck_width = 28.6; // Distance across fretboard nearest to the nut
@@ -60,13 +60,18 @@ bolt_head_length = 4;
 nut_width = 7.9;
 nut_thick = 2.9;
 
-neck_to_bridge = 50;
+neck_to_bridge = 58;
 bridge_angle_increment = neck_angle_increment * 2;
 bridge_length = 10;
 bridge_lift = 5;
-bridge_to_end = 50;
+bridge_to_end = 140;
 
-tuner_rad = 5;
+pickup_hole_length = 2;
+pickup_rad = 15;
+
+tuner_rad = 5.5;
+
+truss_rad = 5.5;
 
 violin();
 //body_piece();
@@ -84,14 +89,19 @@ module bolt(){
 
 
 module violin(){
+	mirror([1,0,0])
   translate([0,0,neck_width / 2])
-  rotate([0,-90 + atan2((bridge_width-neck_width)/2,neck_length),0])
+  rotate([0,-90,0])
+  rotate([0, atan2((bridge_width-neck_width)/2,neck_length),0])
   difference(){
     union(){
+      curved_edge();
+      
 		  top();
       neck_to_bridge();
       bridge();
       bridge_to_end();
+      chin_rest();			
     }
     //bolt_holes();
 
@@ -104,10 +114,38 @@ module violin(){
     translate([0,-5.5,0])
 	  cylinder(r = 5.5, h = 300, $fn = precision);
 
+		// truss rod
+		//translate([0,0,neck_width / 2])
+		//cylinder(r = truss_rad, h = 800, $fn = 4);
+		rotate([3.5,0,0])
+		translate([-6,0,0])
+		cube([12,6,800]);
+
+		// truss rod
+		translate([0,0,neck_width / 2])
+		rotate([.4,0,0])
+		cylinder(r = truss_rad, h = 800, $fn = precision / 2);
+
     rotate([0,-atan2((bridge_width-neck_width)/2,neck_length),0])
-    translate([-neck_width/2-10,-100,-100])
-    cube([10,200,500]);      
+    translate([-neck_width/2-1000,-500,-500])
+    cube([1000,1000,1000]);      
   }
+}
+
+
+module curved_edge(){
+  rotate([90,0,180])
+  linear_extrude(height = 10)
+  scale(3)
+	import("/Volumes/Optical3/Sites/hovalin/curved_edge.dxf");
+}
+
+module chin_rest(){
+  translate([32,-7,-18])
+  translate([0,0,neck_length + neck_to_bridge + bridge_length + bridge_to_end])
+  rotate([-90,0,0])
+  mirror([1,0,0])
+	import("/Volumes/Optical3/Sites/hovalin/chinrest.stl");
 }
 
 module neck_to_bridge(){
@@ -142,7 +180,7 @@ module bridge(){
         }
     
         scale([((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),((bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / bridge_width),1])
-        translate([0,0,bridge_length - slice])
+        translate([0,-3,bridge_length - slice])
         linear_extrude(height = slice){
           bridge_slice_top();
           bridge_slice_middle();
@@ -168,6 +206,11 @@ module bridge(){
       }
     }
     bridge_string_holes();
+		
+		// pickup cutout
+		translate([-25 + (49 - pickup_rad)/ 2,-22,neck_length + neck_to_bridge + (bridge_length - pickup_hole_length)/ 2])
+		cube([100,pickup_rad * 2,pickup_hole_length]);
+
   }  
 }
 
@@ -186,16 +229,25 @@ module bridge_to_end(){
   color("green")
   difference(){
     hull(){
-      translate([-(bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / 2, -4.675,neck_length + neck_to_bridge + bridge_length])
-      cube([bridge_width + (neck_to_bridge + bridge_length) * neck_delta,10,slice]);
+      translate([-(bridge_width + (neck_to_bridge + bridge_length) * neck_delta) / 2, -4.675 - 8,neck_length + neck_to_bridge + bridge_length])
+      cube([bridge_width + (neck_to_bridge + bridge_length) * neck_delta,18,slice]);
 
-      translate([-(bridge_width + (neck_to_bridge + bridge_length + bridge_to_end - slice) * neck_delta) / 2, -4.675,neck_length + neck_to_bridge + bridge_length + bridge_to_end - slice])
-      cube([bridge_width + (neck_to_bridge + bridge_length + bridge_to_end - slice) * neck_delta,10,slice]);    
+      translate([-(bridge_width + (neck_to_bridge + bridge_length + bridge_to_end - slice) * neck_delta) / 2, -4.675 - 8,neck_length + neck_to_bridge + bridge_length + bridge_to_end - slice])
+      cube([bridge_width + (neck_to_bridge + bridge_length + bridge_to_end - slice) * neck_delta,18,slice]);    
     }
     
-    translate([0,-100,neck_length + neck_to_bridge + bridge_length + bridge_to_end - tuner_rad - 10])
-    rotate([-90,0,0])
-    cylinder(r = tuner_rad, h = 200, $fn = precision);
+    for(i = [0:(n_strings / 2)-1]){
+      translate([(i*3 + .5 - n_strings / 2) * 11,-100, 50 + neck_length + neck_to_bridge + bridge_length + tuner_rad * 5])
+      rotate([-90,0,0])
+      cylinder(r = tuner_rad, h = 200, $fn = precision);
+    }
+
+    for(i = [0:(n_strings / 2)-1]){
+      translate([(i*3 + .5 - n_strings / 2) * 10,-100, 10 + neck_length + neck_to_bridge + bridge_length + tuner_rad * 5])
+      rotate([-90,0,0])
+      cylinder(r = tuner_rad, h = 200, $fn = precision);
+    }
+
   }  
 }
 
@@ -205,7 +257,7 @@ module top(){
 		nut();
  
 		translate([0,-neck_bot_arch_rad-(neck_bot_delta*(thumb_bridge_to_nut-thumb_bridge_rad*2)),0])
-		translate([0,thumb_neck_depth,thumb_bridge_to_nut])
+		translate([0,thumb_neck_depth - 4,thumb_bridge_to_nut + thumb_bridge_rad])
 		thumb_bridge();
 
 		translate([0,-neck_bot_arch_rad,0])
@@ -297,7 +349,7 @@ module string_holes_thru(){
 
 module string_holes_base(){
   for(i =[1:n_strings]){
-    translate([neck_grid * (i - 1) * 2 - neck_hole_slice_width/2 + neck_grid,0,0])
+    translate([neck_grid * (i - 1) * 2 - neck_hole_slice_width/2 + neck_grid,-25,0])
     rotate([90,0,0])
     cylinder(r = 2.5, h = 100, $fn=precision);
     // cylinder(r = 2.5, h = neck_bot_arch_rad * 2, $fn=precision);
@@ -424,28 +476,6 @@ module middle(){
   thumb_bridge();
   
   
-}
-
-module body_piece(){
-  translate([0,0,thumb_bridge_to_nut])
-  union(){
-    hull(){
-      linear_extrude(height = slice)
-      scale((neck_width+thumb_bridge_to_nut*neck_delta)/neck_width)
-      neck_slice_bot();
-      
-      translate([0,0,thumb_bridge_rad-slice])
-      linear_extrude(height = slice)
-      scale((neck_width+(thumb_bridge_to_nut + thumb_bridge_rad)*neck_delta)/neck_width)
-      neck_slice_bot();
-    }      
-
-    translate([-thumb_bridge_rad,-(neck_bot_arch_rad + thumb_bridge_height + neck_bot_delta * (thumb_bridge_to_nut - thumb_bridge_rad * 6)),0])
-    cube([thumb_bridge_rad*2,neck_bot_arch_rad + thumb_bridge_height + neck_bot_delta * (thumb_bridge_to_nut - thumb_bridge_rad * 6),thumb_bridge_rad]);
-
-    translate([-truss_rad*2,-bridge_bot_arch_rad,0])
-    cube([truss_rad*4,bridge_bot_arch_rad,neck_length - thumb_bridge_to_nut]);
-  }
 }
 
 module neck_slice(){
