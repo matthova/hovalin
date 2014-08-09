@@ -1,7 +1,7 @@
 /* Constants */
 slice = .1; // thickness of 2d shapes. set to small value
 nudge = 0.0001; // used to push the objects just barely to resolve any manifold issues
-precision = 100; // increase to smooth cylinders or crash computer
+precision = 50; // increase to smooth cylinders or crash computer
 pi = 3.14159; // tasty pi
 
 
@@ -73,8 +73,15 @@ tuner_rad = 5.5;
 
 truss_rad = 5.5;
 
-violin();
+//violin();
 //body_piece();
+
+rotate([90,0,0])
+difference(){
+	curved_edge();
+	violin();
+
+}
 
 module bolt(){
   mirror([0,0,1])
@@ -95,7 +102,7 @@ module violin(){
   rotate([0, atan2((bridge_width-neck_width)/2,neck_length),0])
   difference(){
     union(){
-      curved_edge();
+      //curved_edge();
       
 		  top();
       neck_to_bridge();
@@ -132,10 +139,10 @@ module violin(){
   }
 }
 
-
 module curved_edge(){
+	translate([688,-20+fretboard_thick,-431+5])
   rotate([90,0,180])
-  linear_extrude(height = 10)
+  linear_extrude(height = 20)
   scale(3)
 	import("/Volumes/Optical3/Sites/hovalin/curved_edge.dxf");
 }
@@ -363,7 +370,7 @@ module thumb_neck(){
   thumb_neck_smooth();
   mirror([1,0,0])
   thumb_neck_smooth();
-  thumb_neck_supports();
+  //thumb_neck_supports();
 }
 
 module thumb_neck_supports(){
@@ -399,7 +406,7 @@ module thumb_bridge(){
   thumb_bridge_smooth();
   mirror([1,0,0])
   thumb_bridge_smooth();
-  thumb_bridge_supports();
+  //thumb_bridge_supports();
 }
 
 module thumb_bridge_supports(){
