@@ -76,11 +76,16 @@ truss_rad = 5.5;
 //violin();
 //body_piece();
 
-rotate([90,0,0])
-difference(){
-	curved_edge();
-	violin();
-
+union(){
+  rotate([90,0,0])
+  difference(){
+    curved_edge();
+    violin();
+  }
+  
+  // Add a surfing cow on top of the violin body
+  translate([380, -10, 72])
+  surfing_cow();
 }
 
 module bolt(){
@@ -534,5 +539,212 @@ module bridge_slice_bot(){
     square([bridge_width,bridge_bot_arch_rad]);
     translate([0,bridge_bot_rad-bridge_bot_arch_rad])
     circle(r = bridge_bot_rad, $fn = precision);
+  }
+}
+
+/**********************************************************************
+ * SURFING COW MODULE
+ * A fun geometric cow riding a surfboard, placed on top of the violin!
+ **********************************************************************/
+
+module surfing_cow() {
+  // Cow colors
+  cow_color = [0.95, 0.85, 0.75];     // cream/white
+  spot_color = [0.2, 0.15, 0.1];      // dark brown/black
+  horn_color = [0.6, 0.5, 0.3];       // tan
+  board_color = [0.9, 0.3, 0.2];      // red surfboard
+  eye_color = [0.1, 0.1, 0.1];        // black eyes
+  
+  // Cow dimensions (relative to a 50-unit tall cow)
+  cow_scale = 1;
+  body_w = 18 * cow_scale;
+  body_h = 14 * cow_scale;
+  body_d = 22 * cow_scale;
+  head_r = 7 * cow_scale;
+  neck_h = 6 * cow_scale;
+  leg_h = 14 * cow_scale;
+  leg_r = 2.5 * cow_scale;
+  
+  // ============= SURFBOARD =============
+  color(board_color)
+  hull() {
+    translate([-30, 0, -leg_h - 1])
+    scale([8, 2, 0.8])
+    sphere(r = 3 * cow_scale, $fn = precision/2);
+    
+    translate([30, 0, -leg_h - 1])
+    scale([8, 2, 0.8])
+    sphere(r = 3 * cow_scale, $fn = precision/2);
+  }
+  
+  // Surfboard top grip pad (small dark patch)
+  color([0.2, 0.2, 0.2])
+  translate([-5, -4, -leg_h])
+  cube([10, 8, 0.5]);
+  
+  // ============= COW BODY =============
+  color(cow_color)
+  scale([1, 1, 1])
+  union() {
+    // Main body - oval shape
+    translate([0, 0, 0])
+    scale([body_w/10, body_d/10, body_h/10])
+    sphere(r = 5 * cow_scale, $fn = precision/2);
+    
+    // Neck
+    translate([0, body_d/2 - 2, body_h/4])
+    rotate([-20, 0, 0])
+    cylinder(r = head_r * 0.8, h = neck_h, $fn = precision/2);
+    
+    // Head
+    translate([0, body_d/2 + neck_h - 3, body_h/4 + 2])
+    sphere(r = head_r, $fn = precision/2);
+    
+    // Snout
+    color([0.85, 0.75, 0.65])
+    translate([0, body_d/2 + neck_h + head_r - 1, body_h/4 + 1.5])
+    scale([0.8, 1.2, 0.7])
+    sphere(r = head_r * 0.7, $fn = precision/2);
+  }
+  
+  // ============= COW SPOTS =============
+  color(spot_color) {
+    // Spot on body - back
+    translate([-5, -5, body_h/2 - 2])
+    scale([5, 4, 2])
+    sphere(r = 2, $fn = precision/3);
+    
+    // Spot on body - side
+    translate([6, 3, body_h/4])
+    scale([3, 3, 2.5])
+    sphere(r = 2, $fn = precision/3);
+    
+    // Spot on body - rear
+    translate([-3, -body_d/2 + 1, 0])
+    scale([4, 2, 3])
+    sphere(r = 2, $fn = precision/3);
+  }
+  
+  // ============= LEGS =============
+  color(cow_color) {
+    // Front-left leg
+    translate([-5, body_d/3, -leg_h])
+    cylinder(r = leg_r, h = leg_h, $fn = precision/3);
+    
+    // Front-right leg - in SURFING POSE (lifted up, handled below)
+    // So we skip the default placement
+    
+    // Back-left leg
+    translate([-5, -body_d/3, -leg_h])
+    cylinder(r = leg_r, h = leg_h, $fn = precision/3);
+    
+    // Back-right leg
+    translate([5, -body_d/3, -leg_h])
+    cylinder(r = leg_r, h = leg_h, $fn = precision/3);
+  }
+  
+  // Hooves (front-right hoof is lifted for surfing pose, so we skip it)
+  color([0.3, 0.25, 0.2]) {
+    translate([-5, body_d/3, -leg_h])
+    cylinder(r = leg_r + 0.3, h = 1.5, $fn = precision/3);
+    
+    // Front-right hoof is in the air - no hoof on the board
+    
+    translate([-5, -body_d/3, -leg_h])
+    cylinder(r = leg_r + 0.3, h = 1.5, $fn = precision/3);
+    
+    translate([5, -body_d/3, -leg_h])
+    cylinder(r = leg_r + 0.3, h = 1.5, $fn = precision/3);
+  }
+  
+  // ============= HORNS =============
+  color(horn_color) {
+    // Left horn
+    translate([-4, body_d/2 + neck_h - 3, body_h/4 + head_r + 2])
+    rotate([15, -10, 0])
+    cylinder(r1 = 1, r2 = 0.3, h = 5, $fn = precision/3);
+    
+    // Right horn
+    translate([4, body_d/2 + neck_h - 3, body_h/4 + head_r + 2])
+    rotate([15, 10, 0])
+    cylinder(r1 = 1, r2 = 0.3, h = 5, $fn = precision/3);
+  }
+  
+  // ============= EYES =============
+  color(eye_color) {
+    translate([-3.5, body_d/2 + neck_h + head_r - 3, body_h/4 + head_r - 1])
+    sphere(r = 1, $fn = precision/4);
+    
+    translate([3.5, body_d/2 + neck_h + head_r - 3, body_h/4 + head_r - 1])
+    sphere(r = 1, $fn = precision/4);
+  }
+  
+  // ============= EARS =============
+  color(cow_color) {
+    // Left ear
+    translate([-head_r * 0.7, body_d/2 + neck_h - 1, body_h/4 + head_r])
+    rotate([0, 0, 30])
+    scale([0.5, 0.8, 1])
+    sphere(r = 2.5, $fn = precision/4);
+    
+    // Right ear
+    translate([head_r * 0.7, body_d/2 + neck_h - 1, body_h/4 + head_r])
+    rotate([0, 0, -30])
+    scale([0.5, 0.8, 1])
+    sphere(r = 2.5, $fn = precision/4);
+  }
+  
+  // ============= TAIL =============
+  color(cow_color) {
+    translate([0, -body_d/2 - 1, -2])
+    rotate([10, 0, 0])
+    cylinder(r = 1, h = 8, $fn = precision/4);
+  }
+  
+  // Tail tuft
+  color(spot_color) {
+    translate([0, -body_d/2 - 1, 6])
+    sphere(r = 2, $fn = precision/4);
+  }
+  
+  // ============= SURFING POSE: FRONT-RIGHT HOOF LIFTED =============
+  // Front-right leg lifted up in a classic surfing stance
+  color(cow_color) {
+    translate([5, body_d/3, -leg_h/2 + 3])
+    rotate([45, 0, 0])
+    translate([0, 0, -leg_h/2])
+    cylinder(r = leg_r, h = leg_h, $fn = precision/3);
+  }
+  
+  // ============= SURFBOARD LEASH (cute detail) =============
+  color([0.1, 0.8, 0.8])
+  translate([15, -body_d/2, -leg_h + 5])
+  rotate([0, 30, 0])
+  cylinder(r = 0.5, h = 15, $fn = precision/4);
+  
+  // ============= SHADES (cool surfer cow!) =============
+  color([0.05, 0.05, 0.1])
+  translate([0, body_d/2 + neck_h + head_r - 2, body_h/4 + head_r - 3]) {
+    // Sunglasses frame left
+    translate([-5, 0, 0])
+    rotate([90, 0, 0])
+    linear_extrude(height = 0.5)
+    difference() {
+      circle(r = 3.5, $fn = precision/4);
+      circle(r = 2.5, $fn = precision/4);
+    }
+    
+    // Sunglasses frame right
+    translate([5, 0, 0])
+    rotate([90, 0, 0])
+    linear_extrude(height = 0.5)
+    difference() {
+      circle(r = 3.5, $fn = precision/4);
+      circle(r = 2.5, $fn = precision/4);
+    }
+    
+    // Bridge
+    translate([-2, 0, 0])
+    cube([4, 0.5, 1.5]);
   }
 }
